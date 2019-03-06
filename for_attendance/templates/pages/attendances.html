@@ -1,0 +1,32 @@
+{% extends "templates/web.html" %}
+
+{% block title %}
+	{{(_("{0} List").format(_(doctype))) or title}}
+{% endblock %}
+
+{% block header %}
+<a href="/attendances?time=today" class="btn btn-default pull-right">Today</a>
+<a href="/attendances?time=weekly" class="btn btn-default pull-right">Weekly</a>
+<a href="/attendances?time=monthly" class="btn btn-default pull-right">Monthly</a>
+<h1>{{(_("{0} List").format(_(doctype))) or title}}</h1>
+{% endblock %}
+
+{% block breadcrumbs %}
+	{% include "templates/includes/breadcrumbs.html" %}
+{% endblock %}
+
+{% block header_actions %}
+{% if create_new %}
+<div class="pull-right">
+    <a href="{{ create_new | abs_url }}" class="btn btn-primary btn-sm">
+        {{ _("New") }}
+    </a>
+</div>
+{% endif %}
+{% endblock %}
+{% block page_content %}
+{% if introduction %}<p>{{ introduction }}</p>{% endif %}
+{% include "templates/includes/attendances.html" %}
+{% if list_footer %}{{ list_footer }}{% endif %}
+
+{% endblock %}

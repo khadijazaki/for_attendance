@@ -1,0 +1,17 @@
+
+<div class="web-list-item">
+	<a class="no-decoration" href="/attendance/{{ doc.name }}">
+	{% if list_view_fields %}
+		<div class='row'>
+			{% for df in list_view_fields %}
+			<div class='col-sm-{{ (10/(list_view_fields|len))|int }}'>
+				{{ doc.get(df.fieldname) }}
+			</div>
+			{% endfor %}
+			<a href="/printview?doctype={{ doc.doctype}}&name={{ doc.name }}&format={{ print_format }}" class="btn btn-default">Print</a>
+		</div>
+	{% else %}
+				<p>{{ doc.get(title_field) }}</p>
+	{% endif %}
+	</a>
+</div>
