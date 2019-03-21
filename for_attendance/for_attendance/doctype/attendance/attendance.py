@@ -151,3 +151,4 @@ def get_attendance_list(doctype, txt, filters, limit_start, limit_page_length=20
 		return frappe.db.sql('''select name, employee, employee_name, attendance_time, in_out from `tabAttendance` where attendance_date = %s
 		''', default_date, as_dict=1)
 
+# just checking
