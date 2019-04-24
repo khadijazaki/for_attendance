@@ -1,0 +1,37 @@
+{% extends "templates/web.html" %}
+
+{% block title %}{{ name }}{% endblock %}
+
+{% block page_content %}
+			{% if body %}
+			{{body}}
+			{% else %}
+			<p>Employee: {{ employee }}<p>
+			<p>Employee Name: {{ employee_name }}<p>
+			<p>Attendance Date: {{ a_date }}<p>
+			<p>Attendance Status: {{ status }}<p>
+			<br><br>
+			{% endif %}
+
+
+			<h2>Time Details</h2>
+			<table class="table table-striped">
+			  <thead>
+				<tr>
+				  <th>Punch Time</th>
+				  <th>Punch Type</th>
+				</tr>
+			  </thead>
+			  <tbody>
+					{% for i in punching %}
+				<tr>
+				  <td>{{ i.punch_time }}</td>
+				  <td>{{ i.punch_in_out }}</td>
+				</tr>
+				{% endfor %}
+			  </tbody>
+			</table>
+		  </div>
+		  
+{% endblock %}
+

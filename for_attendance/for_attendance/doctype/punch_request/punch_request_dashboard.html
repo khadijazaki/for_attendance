@@ -1,0 +1,24 @@
+{% if times  %}
+{{ date }}
+<table class="table table-bordered small">
+	<thead>
+		<tr>
+			<th style="width: 20%">{{ __("Punch ID") }}</th>
+			<th style="width: 40%">{{ __("Punch Time") }}</th>
+			<th style="width: 40%">{{ __("Punch Type") }}</th>
+		</tr>
+
+	</thead>
+	<tbody>
+			{% for i in times %}
+				<tr>
+					<td>{{ i.idx}}</td>
+					<td> {{i.punch_time}} </td>
+					<td> {{i.punch_in_out }} </td>
+				</tr>
+			{% endfor %}
+		</tbody>
+</table>
+{% } else { %}
+<p style="margin-top: 30px;"> No attendance on this date. Approving the request will create Attendance. </p>
+{% } %}

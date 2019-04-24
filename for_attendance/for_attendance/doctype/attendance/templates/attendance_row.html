@@ -4,11 +4,28 @@
 	{% if list_view_fields %}
 		<div class='row'>
 			{% for df in list_view_fields %}
-			<div class='col-sm-{{ (10/(list_view_fields|len))|int }}'>
+			<div class='col-sm-{{ (12/(list_view_fields|len))|int }}'>
+				
+				{% if 'status' == df.fieldname %}
+				{% if 'Present' == doc.get(df.fieldname) %}
+				<span class="indicator {{ "green" }}">
+			{{ _(doc.status) }}
+		</span>
+		{% elif 'Absent' == doc.get(df.fieldname) %}
+				<span class="indicator {{ "red" }}">
+			{{ _(doc.status) }}
+		</span>
+		{% elif 'On Leave' == doc.get(df.fieldname) %}
+				<span class="indicator {{ "blue" }}">
+			{{ _(doc.status) }}
+		</span>
+		{% endif %}
+				{% else %}
 				{{ doc.get(df.fieldname) }}
+				{% endif %}
 			</div>
 			{% endfor %}
-			<a href="/printview?doctype={{ doc.doctype}}&name={{ doc.name }}&format={{ print_format }}" class="btn btn-default">Print</a>
+			<!-- <a href="/printview?doctype={{ doc.doctype}}&name={{ doc.name }}&format={{ print_format }}" class="btn btn-default">Print</a> -->
 		</div>
 	{% else %}
 				<p>{{ doc.get(title_field) }}</p>

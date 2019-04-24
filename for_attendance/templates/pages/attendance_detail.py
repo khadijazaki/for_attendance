@@ -28,11 +28,16 @@ def get_context(context):
 		doc = frappe.get_doc(frappe.form_dict.doctype, frappe.form_dict.name)
 
 	meta = frappe.get_meta(doc.doctype)
-	all_fields = frappe.get_meta(doc.doctype).fields
+	for i in doc.punching:
+			i.punch_time = (i.punch_time).strftime('%I:%M %p')
 
 
 	return {
 		"doc":doc,
 		"name": doc.get(meta.title_field) if meta.title_field else doc.name,
-		"all_fields":all_fields
+		"employee":doc.employee,
+		"employee_name":doc.employee_name,
+		"a_date":doc.attendance_date,
+		"punching":doc.punching,
+		"status":doc.status
 	}

@@ -4,40 +4,50 @@
 from __future__ import unicode_literals
 import frappe
 
-from frappe.utils import getdate, nowdate
+from frappe.utils import getdate, nowdate, now
 from frappe import _
 from frappe.website.website_generator import WebsiteGenerator
 from erpnext.hr.utils import set_employee_name
 from frappe.utils import cstr
 from frappe.model.naming import make_autoname
-import datetime
+from datetime import datetime
 from bs4 import BeautifulSoup
 import urllib2
 
+inserted = 0
 class Attendance(WebsiteGenerator):
 	def validate_duplicate_record(self):
 		res = frappe.db.sql("""select name from `tabAttendance` where employee = %s and attendance_date = %s
-			and name != %s and attendance_time = %s""",
-			(self.employee, self.attendance_date, self.name, self.attendance_time))
+			and name != %s""",
+			(self.employee, self.attendance_date, self.name))
 		if res:
 			frappe.throw(_("Attendance for employee {0} is already marked").format(self.employee))
 
 		set_employee_name(self)
 
-	# To set check out and check in of employee
+	def before_insert(self, ignore_permissions=True):
+		if len(self.punching) == 0:
+			row = self.append('punching', {
+			'punch_in_out': 'Punch In',
+			'punch_time': frappe.utils.now()
+			})
+
+	# # To set check out and check in of employee
 	def validate_in_out(self):
-		# first check if a record exists for current day of the same employee 
-		# by default check in is set so the first record of user that day will be check in
-		res = frappe.db.sql("""select name, in_out from `tabAttendance` where employee = %s and attendance_date = %s
-			and name != %s """,
-			(self.employee, self.attendance_date, self.name), as_dict=True)
-		#if record exist then toggle what ever value it has
-		if res:
-			for d in res:
-				if d.in_out == 'Check In':
-					self.in_out = 'Check Out'
-				elif d.in_out == 'Check Out':
-					self.in_out = 'Check In'
+		lenof = len(self.punching)
+		if lenof > 1:
+			# for i in range(2, lenof):
+			# 	self.punching[i].idx = i + 1 
+			for i in self.punching:
+				if i.idx % 2 == 0:
+					i.punch_in_out = 'Punch Out'
+				else:
+					i.punch_in_out = 'Punch In'
+			# else:
+			# 	if self.punching[lenof-2].punch_in_out == 'Punch In':
+			# 		self.punching[lenof-1].punch_in_out = 'Punch Out'
+			# 	elif self.punching[lenof-2].punch_in_out == 'Punch Out':
+			# 		self.punching[lenof-1].punch_in_out = 'Punch In'
 
 	def check_leave_record(self):
 		leave_record = frappe.db.sql("""select leave_type, half_day, half_day_date from `tabLeave Application`
@@ -86,13 +96,24 @@ class Attendance(WebsiteGenerator):
         	self.name = make_autoname(key)
 
 	def get_context(context):
-		context.doc = frappe.get_doc(frappe.form_dict.doctype, frappe.form_dict.name)
+		# context.doc = frappe.get_doc(frappe.form_dict.doctype, frappe.form_dict.name)
 
-		default_print_format = frappe.db.get_value('Property Setter', dict(property='default_print_format', doc_type=frappe.form_dict.doctype), "value")
-		if default_print_format:
-			context.print_format = default_print_format
-		else:
-			context.print_format = "Standard"
+		context.print_format = "Standard"
+
+	
+	def set_indicator(self):
+		"""Set indicator for portal"""
+		if self.status == 'Present':
+			self.indicator_color = "green"
+			self.indicator_title = _("Present")
+
+		elif self.status == 'Absent':
+			self.indicator_color = "red"
+			self.indicator_title = _("Absent")
+
+		elif self.status == 'Present':
+			self.indicator_color = "blue"
+			self.indicator_title = _("On Leave")
         
 @frappe.whitelist()
 def get_events(start, end, filters=None):
@@ -151,4 +172,17 @@ def get_attendance_list(doctype, txt, filters, limit_start, limit_page_length=20
 		return frappe.db.sql('''select name, employee, employee_name, attendance_time, in_out from `tabAttendance` where attendance_date = %s
 		''', default_date, as_dict=1)
 
-# just checking
+@frappe.whitelist()
+def add_punch():
+	emp = frappe.get_list('Employee', filters={'user_id': frappe.session.user}, fields=['name'])
+	if not emp:
+		frappe.throw(_("You are not an employee"))
+	res = frappe.get_list('Attendance', filters={'employee': emp[0].name, 'attendance_date': now()})
+	if res:
+		res = frappe.get_doc('Attendance', res[0].name)
+		res.append('punching', {
+			'punch_in_out': 'Punch In',
+			'punch_time': frappe.utils.now()
+		})
+		res.save(ignore_permissions=True)
+		return res

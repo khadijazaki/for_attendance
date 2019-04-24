@@ -37,7 +37,7 @@ website_generators = ["Attendance"]
 
 website_route_rules = [
 	{"from_route": "/attendance", "to_route": "Attendance"},
-	{"from_route": "/attendance/<path:name>", "to_route": "checking",
+	{"from_route": "/attendance/<path:name>", "to_route": "attendance_detail",
 		"defaults": {
 			"doctype": "Attendance",
 			"parents": [{"label": _("check"), "route": "attendance"}]

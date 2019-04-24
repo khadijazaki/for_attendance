@@ -36,24 +36,24 @@ def get_attendance(limit_start=0, limit=3):
     if 'Employee' and not 'Administrator' in frappe.get_roles(user):
         attendances = frappe.db.sql('''select name from `tabAttendance` where attendance_date = %s
                 and employee IN (select name from `tabEmployee` where user_id = %s)
-                order by modified desc limit %s, %s''', (default_date, user, limit_start, limit+1), as_dict=1)
+                order by attendance_date desc limit %s, %s''', (default_date, user, limit_start, limit+1), as_dict=1)
         if time and time == 'weekly':
             attendances = frappe.db.sql('''select name from `tabAttendance` where WEEK(attendance_date, 1) = %s
                 and employee IN (select name from `tabEmployee` where user_id = %s)
-                order by modified desc limit %s, %s''', (default_date.isocalendar()[1], user, limit_start, limit+1), as_dict=1)
+                order by attendance_date desc limit %s, %s''', (default_date.isocalendar()[1], user, limit_start, limit+1), as_dict=1)
         if time and time == 'monthly':
             attendances = frappe.db.sql('''select name from `tabAttendance` where MONTH(attendance_date) = %s
                 and employee IN (select name from `tabEmployee` where user_id = %s)
-                order by modified desc limit %s, %s''', (default_date.month, user, limit_start, limit+1), as_dict=1)
+                order by attendance_date desc limit %s, %s''', (default_date.month, user, limit_start, limit+1), as_dict=1)
     else:
         attendances = frappe.db.sql('''select name from `tabAttendance` where attendance_date = %s
-                order by modified desc limit %s, %s ''', (default_date, limit_start, limit+1), as_dict=1)
+                order by attendance_date desc limit %s, %s ''', (default_date, limit_start, limit+1), as_dict=1)
         if time and time == 'weekly':
             attendances = frappe.db.sql('''select name from `tabAttendance` where WEEK(attendance_date, 1) = %s
-                order by modified desc limit %s, %s''', (default_date.isocalendar()[1], limit_start, limit+1), as_dict=1)
+                order by attendance_date desc limit %s, %s''', (default_date.isocalendar()[1], limit_start, limit+1), as_dict=1)
         if time and time == 'monthly':
             attendances = frappe.db.sql('''select name from `tabAttendance` where MONTH(attendance_date) = %s
-                order by modified desc limit %s, %s''', (default_date.month, limit_start, limit+1), as_dict=1)
+                order by attendance_date desc limit %s, %s''', (default_date.month, limit_start, limit+1), as_dict=1)
     show_more = len(attendances) > limit
     if show_more:
         attendances = attendances[:-1]

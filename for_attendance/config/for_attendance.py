@@ -9,6 +9,10 @@ def get_data():
 				{
 					"type": "doctype",
 					"name": "Attendance",
+				},
+				{
+					"type": "doctype",
+					"name": "Punch Request",
 				}
 			]
 		}
