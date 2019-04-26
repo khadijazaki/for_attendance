@@ -15,10 +15,11 @@
             {% include "templates/includes/list/filters.html" %}
         {%- endif %} -->
 		{% if result_heading_template %}{% include result_heading_template %}{% endif %}
-
+		
     	<div class="result">
 			{% for item in result %}
-    			{{ item }}
+				{{ item }}
+				
     		{% endfor %}
     	</div>
     	<div class="more-block {% if not show_more -%} hide {%- endif %}">

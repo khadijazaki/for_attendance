@@ -6,32 +6,48 @@
 			{% if body %}
 			{{body}}
 			{% else %}
-			<p>Employee: {{ employee }}<p>
-			<p>Employee Name: {{ employee_name }}<p>
-			<p>Attendance Date: {{ a_date }}<p>
-			<p>Attendance Status: {{ status }}<p>
-			<br><br>
+
+					<div class="row">
+							<div class="col-sm-4">
+									<h2>Details</h2>
+									<p>Employee: {{ employee }}<p>
+											<p>Employee Name: {{ employee_name }}<p>
+											<p>Attendance Date: {{ a_date }}<p>
+											<p>Attendance Status:   <span class="indicator {{ doc.indicator_color }}">
+												{{ _(doc.get('indicator_title')) }}
+											</span><p>
+											<p>Total Hours: <strong>{{total_hours}}</strong></p>
+											<p>Total hours this Week: <strong>{{total_in_week}}</strong></p>
+											<p>Total hours this Month: <strong>{{total_in_month}}</strong></p>
+							</div>
+							<div class="col-sm-8">
+									{% if punching%}
+				<h2>Time Details</h2>
+				<table class="table table-striped">
+					<thead>
+					<tr>
+						<th>Punch Time</th>
+						<th>Punch Type</th>
+						<th>Edit History</th>
+					</tr>
+					</thead>
+					<tbody>
+						{% for i in punching %}
+					<tr>
+						<td>{{ i.punch_time }}</td>
+						<td>{{ i.punch_in_out }}</td>
+						<td>{{ i.edited }}</td>
+					</tr>
+					{% endfor %}
+					</tbody>
+				</table>
+				{% endif %}
+				</div>
+							</div>
+
+      
 			{% endif %}
-
-
-			<h2>Time Details</h2>
-			<table class="table table-striped">
-			  <thead>
-				<tr>
-				  <th>Punch Time</th>
-				  <th>Punch Type</th>
-				</tr>
-			  </thead>
-			  <tbody>
-					{% for i in punching %}
-				<tr>
-				  <td>{{ i.punch_time }}</td>
-				  <td>{{ i.punch_in_out }}</td>
-				</tr>
-				{% endfor %}
-			  </tbody>
-			</table>
-		  </div>
+			
 		  
 {% endblock %}
 

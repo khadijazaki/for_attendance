@@ -5,7 +5,6 @@
 {% endblock %}
 abc
 {% block header %}
-
 <a href="/attendances?time=today" class="btn btn-default pull-right">Today</a>
 <a href="/attendances?time=weekly" class="btn btn-default pull-right">Weekly</a>
 <a href="/attendances?time=monthly" class="btn btn-default pull-right">Monthly</a>
@@ -25,6 +24,22 @@ abc
 </div>
 {% endblock %}
 {% block page_content %}
+{% if 'weekly' == time %}
+<p>Total hours this week: <strong>{{week}}</strong></p>
+{% endif %}
+{% if 'monthly' == time %}
+<p>Total hours this month: <strong>{{month}}</strong></p>
+{% endif %}
+<div class="web-list-item"></div>
+{% if list_view_fields %}
+		<div class='row'>
+			{% for df in list_view_fields %}
+			<div class='col-sm-{{ (12/(list_view_fields|len))|int }}'>
+				<p style="text-transform: capitalize;"><strong>{{df.fieldname|replace("_", " ")}}</strong></p>
+			</div>
+            {% endfor %}
+			{% endif %}
+			</div>
 {% if introduction %}<p>{{ introduction }}</p>{% endif %}
 {% include "templates/includes/attendances.html" %}
 {% if list_footer %}{{ list_footer }}{% endif %}

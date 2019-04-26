@@ -12,7 +12,8 @@ frappe.ui.form.on('Punch Request', {
 	},
     
 	make_dashboard: function(frm) {
-		var punch_details;
+		var punch_details = [];
+		var ids = [];
 		if (frm.doc.employee && frm.doc.punch_time) {
 
 			frappe.call({
@@ -25,14 +26,20 @@ frappe.ui.form.on('Punch Request', {
 				callback: function(r) {
 					if (r.message) {
 						punch_details = r.message;
+						for (var i = 0; i < punch_details['punching'].length; i++) {
+							ids.push(punch_details['punching'][i].idx);
+						  }
+						frm.set_df_property('punch_id', 'options', ids );
+						frm.refresh_field('punch_id');
 					}
 				}
 			});
 			$("div").remove(".form-dashboard-section");
 			let section = frm.dashboard.add_section(
 				frappe.render_template('punch_request_dashboard', {
-					times: punch_details,
-					date: moment(frm.doc.punch_time).format('DD-MMM-YYYY')
+					times: punch_details['punching'],
+					date: moment(frm.doc.punch_time).format('DD-MMM-YYYY'),
+					status: punch_details['status']
 				})
 			);
 

@@ -5,14 +5,12 @@ frappe.views.calendar["Attendance"] = {
 		"start": "date",
 		"end": "date",
 		"id": "name",
-		"docstatus": 1
+		"status": "status"
 	},
-	options: {
-		header: {
-			left: 'prev,next today',
-			center: 'title',
-			right: 'month'
-		}
-	},
-	get_events_method: "erpnext.hr.doctype.attendance.attendance.get_events"
+
+	get_events_method: "erpnext.hr.doctype.attendance.attendance.get_events",
+	onload: function() {
+		// $(".fc-left").append("<p>Some appended text.</p>");
+		alert('hello');
+	}
 };

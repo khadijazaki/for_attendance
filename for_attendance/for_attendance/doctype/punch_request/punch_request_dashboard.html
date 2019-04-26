@@ -1,5 +1,9 @@
-{% if times  %}
-{{ date }}
+{% if not status %}
+<p style="margin-top: 30px;"> No Attendance on <strong>{{ date }}</strong>. Approving request will create it. </p>
+{% endif %}
+{% if 'Present' == status %}
+Punch details of Attendance on <strong>{{ date }}</strong><br>
+Status <strong>{{status}}</strong>
 <table class="table table-bordered small">
 	<thead>
 		<tr>
@@ -19,6 +23,7 @@
 			{% endfor %}
 		</tbody>
 </table>
-{% } else { %}
-<p style="margin-top: 30px;"> No attendance on this date. Approving the request will create Attendance. </p>
-{% } %}
+{% endif %}
+{% if 'Absent' == status |  'On Leave' == status %}
+<p style="margin-top: 30px;"> Not allowed for attendances with status <strong>{{ status }}</strong> </p>
+{% endif %}

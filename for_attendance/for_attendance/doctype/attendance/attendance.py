@@ -4,17 +4,16 @@
 from __future__ import unicode_literals
 import frappe
 
-from frappe.utils import getdate, nowdate, now
+from frappe.utils import getdate, nowdate, now, time_diff_in_hours
 from frappe import _
 from frappe.website.website_generator import WebsiteGenerator
 from erpnext.hr.utils import set_employee_name
 from frappe.utils import cstr
 from frappe.model.naming import make_autoname
-from datetime import datetime
+from datetime import datetime, date
 from bs4 import BeautifulSoup
 import urllib2
 
-inserted = 0
 class Attendance(WebsiteGenerator):
 	def validate_duplicate_record(self):
 		res = frappe.db.sql("""select name from `tabAttendance` where employee = %s and attendance_date = %s
@@ -26,7 +25,7 @@ class Attendance(WebsiteGenerator):
 		set_employee_name(self)
 
 	def before_insert(self, ignore_permissions=True):
-		if len(self.punching) == 0:
+		if len(self.punching) == 0 and self.status == 'Present':
 			row = self.append('punching', {
 			'punch_in_out': 'Punch In',
 			'punch_time': frappe.utils.now()
@@ -79,6 +78,31 @@ class Attendance(WebsiteGenerator):
 		 	self.employee)
 		if not emp:
 			frappe.throw(_("Employee {0} is not active or does not exist").format(self.employee))
+			
+	def validate_total_hours(self):
+		lenof = len(self.punching)
+		if lenof >= 1:
+			punch_in = [i.punch_time for i in self.punching if i.punch_in_out == 'Punch In']
+			punch_out = [i.punch_time for i in self.punching if i.punch_in_out == 'Punch Out']
+			if len(punch_in) != len(punch_out):
+				punch_in.pop()
+			differences = [time_diff_in_hours(y,x) for x, y in zip(punch_in, punch_out)]
+			self.total_hours = round(sum(differences), 2)
+		else:
+			self.total_hours = 0
+
+	def validate_total_in_week_month(self):
+		import datetime
+		if isinstance(self.attendance_date, datetime.date):
+			check_date = self.attendance_date
+		else:
+			from datetime import datetime, date
+			check_date = datetime.strptime(self.attendance_date, '%Y-%m-%d').date()
+		a_time_w = frappe.db.sql('''select round(sum(total_hours), 2) from `tabAttendance` where WEEK(attendance_date, 1) = %s''', check_date.isocalendar()[1], as_list=1)
+		self.total_in_week = a_time_w[0][0]
+		a_time_m = frappe.db.sql('''select round(sum(total_hours), 2) from `tabAttendance` where MONTH(attendance_date) = %s''', check_date.month, as_list=1)
+		self.total_in_month = a_time_m[0][0]
+
 
 	def validate(self):
 		from erpnext.controllers.status_updater import validate_status
@@ -88,6 +112,8 @@ class Attendance(WebsiteGenerator):
 		self.validate_duplicate_record()
 		self.check_leave_record()
 		self.validate_in_out()
+		self.validate_total_hours()
+		self.validate_total_in_week_month()
 
 	def autoname(self):
 		dt = frappe.get_meta("Attendance")
@@ -180,6 +206,9 @@ def add_punch():
 	res = frappe.get_list('Attendance', filters={'employee': emp[0].name, 'attendance_date': now()})
 	if res:
 		res = frappe.get_doc('Attendance', res[0].name)
+		if res.status != 'Present':
+			frappe.throw(_("Not allowed as attendance is not marked Present"))
+			return res
 		res.append('punching', {
 			'punch_in_out': 'Punch In',
 			'punch_time': frappe.utils.now()

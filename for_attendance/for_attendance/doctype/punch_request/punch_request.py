@@ -19,9 +19,12 @@ class PunchRequest(Document):
 
 	def add_att(self):
 		new_att = frappe.get_doc({"doctype":"Attendance", "employee":self.employee})
+		if getdate(self.punch_time) != getdate(frappe.utils.now()):
+			new_att.attendance_date = getdate(self.punch_time)
 		new_att.append('punching', {
 			'punch_in_out': self.punch_type,
-			'punch_time': self.punch_time
+			'punch_time': self.punch_time,
+			'edited': 'Added by HR at ' + frappe.utils.now()
 			})
 		new_att.insert()
 
@@ -32,33 +35,43 @@ class PunchRequest(Document):
 			up = frappe.get_doc('In Out', in_out[0])
 			up.punch_time = self.punch_time
 			up.punch_in_out = self.punch_type
+			up.edited = 'Updated by HR at ' + frappe.utils.now()
 			up.save()
+			self.u_att(name)
 		else:
 			in_out = frappe.get_list('In Out', filters=[['parent', '=',  name], ['punch_time', '<=', self.punch_time]])
 			idxs = len(in_out)
 			new_att.append('punching', {
 				'idx': idxs,
 				'punch_in_out': self.punch_type,
-				'punch_time': self.punch_time
+				'punch_time': self.punch_time,
+				'edited': 'Added by HR at ' + frappe.utils.now()
 				})
 			for i in range(idxs+1, len(new_att.punching)):
 		 		new_att.punching[i - 1].idx = i + 1
 			new_att.punching[len(new_att.punching)-1].idx = idxs+1
 			new_att.save()
-		new_att.save()
 
-	def validate(self):
-		punching = get_punch_details(self.employee, self.punch_time)
-		x = [x.idx for x in punching]
+	def update_validate(self):
 		if self.update_value:
+			punching = get_punch_details(self.employee, self.punch_time)
+			x = [x.idx for x in punching['punching']]
 			if not self.punch_id:
 				frappe.throw(_("Must Enter Punch ID to update record"))
+
+	def validate(self):
+		self.update_validate()
 
 	def on_submit(self):
 		if self.status == "Open":
 			frappe.throw(_("Only Punch Requests with status 'Approved' and 'Rejected' can be submitted"))
 
 		self.validate_att()
+
+	def u_att(self, name):
+		new_att = frappe.get_doc('Attendance', name)
+		new_att.save()
+
 
 
 @frappe.whitelist()
@@ -68,4 +81,8 @@ def get_punch_details(employee, date):
 		res = frappe.get_doc('Attendance', res[0].name)
 		for i in res.punching:
 			i.punch_time = (i.punch_time).strftime('%I:%M %p')
-		return res.punching
+		ret = {
+			'punching': res.punching,
+			'status': res.status
+			}
+		return ret

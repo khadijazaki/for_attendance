@@ -1,5 +1,5 @@
 frappe.listview_settings['Attendance'] = {
-	add_fields: ["status", "attendance_date"],
+	add_fields: ["status", "attendance_date", "total_hours"],
 	// get_indicator: function(doc) {
 	// 	return [__(doc.status), doc.status=="Present" ? "green" : "darkgrey", "status,=," + doc.status];
 	// }
@@ -13,5 +13,6 @@ frappe.listview_settings['Attendance'] = {
 		else if (doc.status === "On Leave"){
 			return [__("On Leave"), "blue", "status,=," + doc.status];
 		}
-	}
+	},
+	
 };

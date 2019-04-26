@@ -8,4 +8,4 @@ from frappe.model.document import Document
 
 class InOut(Document):
 	def after_insert(self):
-		check = 'hello'
+		self.check = 'hello'

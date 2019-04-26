@@ -22,9 +22,10 @@ def get_context(context):
     return get_attendance()
 
 @frappe.whitelist(allow_guest=True)
-def get_attendance(limit_start=0, limit=3):
-    limit_start = cint(limit_start)
+def get_attendance(limit_start=0, limit=10):
+    default_date = datetime.date.today()
     user = frappe.session.user
+    limit_start = cint(limit_start)
     row_template = 'for_attendance/doctype/attendance/templates/attendance_row.html'
     result = []
     doctype = 'Attendance'
@@ -32,7 +33,7 @@ def get_attendance(limit_start=0, limit=3):
     all_fields = frappe.get_meta(doctype).fields
     list_view_fields = [df for df in all_fields if df.in_list_view][:4]
     time = frappe.form_dict.time
-    default_date = datetime.date.today()
+    
     if 'Employee' and not 'Administrator' in frappe.get_roles(user):
         attendances = frappe.db.sql('''select name from `tabAttendance` where attendance_date = %s
                 and employee IN (select name from `tabEmployee` where user_id = %s)
@@ -55,6 +56,7 @@ def get_attendance(limit_start=0, limit=3):
             attendances = frappe.db.sql('''select name from `tabAttendance` where MONTH(attendance_date) = %s
                 order by attendance_date desc limit %s, %s''', (default_date.month, limit_start, limit+1), as_dict=1)
     show_more = len(attendances) > limit
+    t_doc = frappe.get_doc('Attendance', attendances[0])
     if show_more:
         attendances = attendances[:-1]
     for a in attendances:
@@ -67,6 +69,9 @@ def get_attendance(limit_start=0, limit=3):
         "result":result,
         "show_more": show_more,
         "next_start": limit_start + limit,
+        "time": time,
+        "week": t_doc.total_in_week,
+        "month": t_doc.total_in_month
         }
 
 # Not removing follwoing for syntax purpose
